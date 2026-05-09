@@ -26,6 +26,7 @@ def find_lines_after_string(filename, search_string):
                     line2 = lines[i+2].strip()
                 break
     return line1, line2
+
 def CAL_PASS_TIME(target_satellite, observer_lat, observer_lon, observer_elevation, tz="Asia/Shanghai"):
     topos = Topos(latitude_degrees=observer_lat, longitude_degrees=observer_lon,
                   elevation_m=observer_elevation)
