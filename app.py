@@ -1,18 +1,19 @@
 import head
 from datetime import datetime, timedelta
+import time
 from flask import Flask, request, jsonify
 from flask_cors import cross_origin
 import ephem
-import redis
 import uuid
-import dateutil
+import dateutil.tz  
 
 app = Flask(__name__)
-r = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
+# 使用原生的内存字典替代 Redis
+local_cache = {}
 
 def local2utc(local_dtm, tz="Asia/Shanghai"):
-    # 本地时间转 UTC 时间（ -8:00 ）
+    # 本地时间转 UTC 时间
     return datetime.utcfromtimestamp(local_dtm.replace(tzinfo=dateutil.tz.gettz(tz)).timestamp())
 
 @app.route("/lol", methods=['POST'])
@@ -21,11 +22,22 @@ def lol():
     func = request.json.get('func', 0)
     _uuid = request.json.get('uuid', str(uuid.uuid4()))
     _cache = request.json.get('cache', '')
+    
+    current_time = time.time()
+    
     if func == 0:
-        r.set(_uuid, _cache, 600)
+        local_cache[_uuid] = {
+            'data': _cache,
+            'expire': current_time + 600
+        }
     else:
-        if r.get(_uuid):
-            _cache = r.get(_uuid).decode("utf-8")
+        if _uuid in local_cache:
+            if current_time < local_cache[_uuid]['expire']:
+                _cache = local_cache[_uuid]['data']
+            else:
+                del local_cache[_uuid]
+                _cache = ''
+                
     return jsonify({'code': 200, 'uuid': _uuid, 'cache': _cache})
 
 @app.route("/pass", methods=['POST'])
@@ -50,7 +62,6 @@ def satpass():
         'departure_times': departure_times
     })
 
-
 @app.route("/doppler", methods=['POST'])
 @cross_origin()
 def doppler():
@@ -68,8 +79,8 @@ def doppler():
     departure_time = datetime.strptime(request.json.get('departure_time', ''),
                                        format)
     satellite = ephem.readtle(sat, sat_line_1, sat_line_2)
-    # print(str(pass_time) + " " + str(local2utc(pass_time)))
-    shift_array = []
+    
+    shift_array =[]
     while pass_time < departure_time + timedelta(seconds=1):
         AZ, EI, SHITF_UP, SHIFT_DOWN, DIS = head.CAL_DATA(
             satellite, sat_line_1, sat_line_2, float(lng), float(lat),
@@ -79,3 +90,6 @@ def doppler():
         shift_array.append([SHITF_UP, SHIFT_DOWN])
         pass_time = pass_time + timedelta(seconds=1)
     return jsonify({'code': 200, 'shift_array': shift_array})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
