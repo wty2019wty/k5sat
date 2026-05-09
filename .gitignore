@@ -1,2 +1,5 @@
 venv
 *.bak
+
+# Python 缓存文件
+__pycache__/
