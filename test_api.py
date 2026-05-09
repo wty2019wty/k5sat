@@ -31,11 +31,11 @@ def test_lol_api():
     test_cache = "test_cache_data"
 
     # 设置缓存
-    res0 = requests.post(url, json={"func": 0, "uuid": test_uuid, "cache": test_cache})
+    res0 = requests.post(url, json={"func": 0, "uuid":"6e3c3d26-3266-4cae-bf6a-193646678330", "cache": test_cache})
     print(f"设置缓存 | 状态码：{res0.status_code} | 响应：{res0.text}")
 
     # 获取缓存
-    res1 = requests.post(url, json={"func": 1, "uuid": test_uuid})
+    res1 = requests.post(url, json={"func": 1, "uuid":"6e3c3d26-3266-4cae-bf6a-193646678330"})
     print(f"获取缓存 | 状态码：{res1.status_code} | 响应：{res1.text}")
     print("=== /lol 测试完成 ===\n")
 
