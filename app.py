@@ -34,6 +34,7 @@ def lol():
 def pass_time():
     try:
         data = request.get_json()
+        sat_name = data.get('sat_name')  # 获取卫星名
         tle1 = data.get('tle1')
         tle2 = data.get('tle2')
         lon = data.get('lon')
@@ -41,8 +42,9 @@ def pass_time():
         alt = data.get('alt', 0)
         tz_str = data.get('tz', 'Asia/Shanghai')
 
-        # 解析卫星
-        sat = FIND_SATE(tle1, tle2)
+        # 修复：补全 3 个参数！
+        sat = FIND_SATE(sat_name, tle1, tle2)
+        
         # 计算过境时间
         rise_time, set_time = CAL_PASS_TIME(sat, lat, lon, alt, tz_str)
 
@@ -59,6 +61,7 @@ def pass_time():
 def doppler():
     try:
         data = request.get_json()
+        sat_name = data.get('sat_name')
         tle1 = data.get('tle1')
         tle2 = data.get('tle2')
         lon = data.get('lon')
@@ -71,7 +74,9 @@ def doppler():
         tz_str = data.get('tz', 'Asia/Shanghai')
 
         from head import CAL_DATA
-        sat = FIND_SATE(tle1, tle2)
+        
+        # 修复：补全 3 个参数！
+        sat = FIND_SATE(sat_name, tle1, tle2)
 
         shift_up_list = []
         shift_down_list = []
