@@ -88,14 +88,14 @@ def test_doppler_api(pass_time, departure_time):
         "departure_time": departure_time
     }
 
-    # 🚀 打印完整请求参数（关键调试信息）
+    #打印完整请求参数（关键调试信息）
     print("请求参数：")
     for k, v in payload.items():
         print(f"  {k}: {v}")
 
     try:
         response = requests.post(url, json=payload, timeout=30)
-        # 🚀 打印完整响应（包括错误）
+        #打印完整响应（包括错误）
         print(f"状态码：{response.status_code}")
         print(f"响应内容：{response.text}")
         response.raise_for_status()
