@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 
 # 基础URL（和你的Flask服务一致）
-BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = "http://127.0.0.1:8787"
 
 # 卫星参数（ISS）
 SAT_NAME = "ISS (ZARYA)"
