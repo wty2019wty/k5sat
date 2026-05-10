@@ -1,5 +1,6 @@
 # k5sat
-
+## 精确度不够
+https://github.com/wty2019wty/k5sat/commit/218bd81414f285e2e72a6194e85cbe7d55a909ed
 ### 星历计算接口（Worker+KV）
 
 
