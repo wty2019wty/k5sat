@@ -1,21 +1,17 @@
 # k5sat
 
-### 星历计算接口：
-    https://github.com/silenty4ng/k5sat
+### 星历计算接口（Worker+KV）
+
 
 ```
-
-git clone https://github.com/silenty4ng/k5sat.git
+git clone https://github.com/wty2019wty/k5sat.git
 cd k5sat/Worker+KV
+
+# node安装在.\Worker+KV\node\node-v24.15.0-win-x64\node.exe
 
 cmd start-dev.bat
 
 ```
-
-
-
-
-
 
 这里是完整且可以直接运行的代码和具体操作步骤。为了彻底完成你的迁移，我将整个过程分为 **3步**。你只需要跟着复制粘贴和执行命令即可。
 
@@ -49,6 +45,11 @@ name = "satellite-api"
 main = "src/index.js"
 compatibility_date = "2024-05-10"
 
+# 配置自定义域名
+routes =[
+  { pattern = "xxx.com", custom_domain = true }
+]
+
 # 配置 KV 命名空间（替换 Redis）
 [[kv_namespaces]]
 binding = "CACHE_KV"
@@ -56,8 +57,11 @@ id = "填入你刚才创建生成的_id"
 ```
 
 ---
-
-本地测试一下接口
+### 第三步：本地测试&一键部署到 Cloudflare
+```
+# 本地测试一下接口
 npx wrangler dev
-一键部署到 Cloudflare
+
+# 一键部署到 Cloudflare
 npx wrangler deploy
+```
