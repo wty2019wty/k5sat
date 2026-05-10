@@ -31,6 +31,7 @@ npm install hono satellite.js dayjs
 
 # 4. 创建 KV 空间 (用来代替你的 Redis)
 npx wrangler kv:namespace create CACHE_KV
+npx wrangler kv namespace create CACHE_KV
 ```
 *注意：第4步执行完毕后，终端会输出一段代码，类似 `{ binding = "CACHE_KV", id = "xxxxxxxxxxxxxxxxxxxxx" }`，把它复制下来。*
 
