@@ -13,10 +13,10 @@ dayjs.extend(customParseFormat)
 
 const app = new Hono()
 
-// 允许跨域，等同于 Python 中的 @cross_origin()
+// 允许跨域
 app.use('*', cors())
 
-// ========= 新增的 GET 路由，防止浏览器访问直接报 404 =========
+// 健康检查
 app.get('/', (c) => {
   return c.json({
     status: "OK",
@@ -24,11 +24,8 @@ app.get('/', (c) => {
     instructions: "请使用 POST 请求访问 /lol, /pass, /doppler 接口。"
   })
 })
-// =========================================================
 
-/**
- * 接口 1: /lol - 缓存读写 (等效于 Redis 操作)
- */
+// ====================== 1. 缓存接口 ======================
 app.post('/lol', async (c) => {
   const body = await c.req.json()
   const func = body.func || 0
@@ -36,10 +33,8 @@ app.post('/lol', async (c) => {
   let cache = body.cache || ''
 
   if (func === 0) {
-    // 写入 KV，600秒过期
     await c.env.CACHE_KV.put(uuid, cache, { expirationTtl: 600 })
   } else {
-    // 读取 KV
     const stored = await c.env.CACHE_KV.get(uuid)
     if (stored !== null) {
       cache = stored
@@ -48,7 +43,7 @@ app.post('/lol', async (c) => {
   return c.json({ code: 200, uuid, cache })
 })
 
-// ====================== 工具函数：计算某一时刻的高度角 ======================
+// ====================== 工具函数：计算高度角 ======================
 function getElevation(satrec, observerGd, date) {
   const posVel = satellite.propagate(satrec, date)
   if (!posVel.position) return null
@@ -58,7 +53,7 @@ function getElevation(satrec, observerGd, date) {
   return satellite.radiansToDegrees(lookAngles.elevation)
 }
 
-// ====================== 2. 过境预测（带二分法精修，误差<1秒） ======================
+// ====================== 过境预测（二分法高精度） ======================
 app.post('/pass', async (c) => {
   try {
     const body = await c.req.json()
@@ -106,7 +101,6 @@ app.post('/pass', async (c) => {
     for (const candidate of passCandidates) {
       let left = candidate.start.toDate()
       let right = candidate.end.toDate()
-      let refinedTime = null
 
       // 二分法迭代，最多10次，足够收敛到1秒以内
       for (let i = 0; i < 10; i++) {
@@ -123,7 +117,7 @@ app.post('/pass', async (c) => {
         }
       }
 
-      refinedTime = new Date((left.getTime() + right.getTime()) / 2)
+      const refinedTime = new Date((left.getTime() + right.getTime()) / 2)
       const formatted = dayjs(refinedTime).tz(tz).format('YYYY-MM-DD HH:mm:ss')
 
       if (candidate.type === 'rise') passTimes.push(formatted)
@@ -140,18 +134,18 @@ app.post('/pass', async (c) => {
   }
 })
 
-// ====================== 3. 多普勒计算（保持你原来的 0.1 秒差分） ======================
+// ====================== 多普勒计算（保留1位小数） ======================
 function getDopplerShift(satrec, observerGd, date, txHz, rxHz) {
   const C = 299792.458
 
-  // 0.1 秒差分，保持你原来的方案
+  // 保持 0.1 秒差分不变
   const d1 = new Date(date.getTime() - 100)
   const d2 = new Date(date.getTime() + 100)
 
   const p1 = satellite.propagate(satrec, d1)
   const p2 = satellite.propagate(satrec, d2)
 
-  if (!p1.position || !p2.position) return [0, 0]
+  if (!p1.position || !p2.position) return [0.0, 0.0]
 
   const gmst1 = satellite.gstime(d1)
   const gmst2 = satellite.gstime(d2)
@@ -166,7 +160,10 @@ function getDopplerShift(satrec, observerGd, date, txHz, rxHz) {
   const upShift = (rangeRate / C) * txHz
   const downShift = -(rangeRate / C) * rxHz
 
-  return [Math.round(upShift), Math.round(downShift)]
+  return [
+    parseFloat(upShift.toFixed(1)),
+    parseFloat(downShift.toFixed(1))
+  ]
 }
 
 // ====================== 多普勒接口 ======================
