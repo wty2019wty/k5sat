@@ -1,0 +1,17 @@
+name = "satellite-api"
+main = "src/index.js"
+compatibility_date = "2024-05-10"
+
+
+routes =[
+  { pattern = "xxx.com", custom_domain = true }
+]
+
+
+# 配置 KV 命名空间（替换 Redis）
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "xxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+
+

@@ -1,0 +1,10 @@
+venv
+*.bak
+
+# Python 缓存文件
+__pycache__/
+
+Worker+KV/node
+Worker+KV/node_modules
+Worker+KV/.local
+Worker+KV/.wrangler
